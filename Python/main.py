@@ -18,22 +18,21 @@ columns = [date if len(date.split('-')[2]) == 2 else '-'.join(
 rows = list(set([x for x in new_data["isin"]]))
 
 # Создаем таблицу
-table = pd.DataFrame(columns=columns, index=rows)
+table = pd.DataFrame(0, columns=columns, index=rows)
 
-# Вставляем данные в таблицу
-for index, row in new_data.iterrows():
-    isin = row['isin']
-    date = row['report_date'].strftime('%Y-%m-%d')
-    quantity = row['quantity']
-    if date in table.columns:
-        table.loc[isin, date] = quantity
+# Вставляем данные в таблицу, суммируя с предыдущими значениями
+for isin in rows:
+    last_quantity = 0
+    for date in columns:
+        data_row = new_data.loc[(new_data['isin'] == isin) & (new_data['report_date'].dt.strftime('%Y-%m-%d') == date)]
+        if not data_row.empty:
+            last_quantity += data_row['quantity'].sum()
+        table.loc[isin, date] = last_quantity
 
 # Добавляем код ценной бумаги
 table.reset_index(inplace=True)
 table.rename(columns={'index': 'ISIN'}, inplace=True)
 
-# Меняем пропуски на #
-table.fillna("#", inplace=True)
 
 # Разделяем столбец "issuer_name_country" на два столбца "issuer_name" и "country"
 for isin in new_data['isin'].unique():
