@@ -31,21 +31,16 @@ table = pd.DataFrame(columns=columns, index=rows)
 
 print(rows)
 print(columns)
-# Вставляем данные в таблицу, суммируя с предыдущими значениями
+
 for isin in rows:
     last_quantity = 0
     for date in columns:
-        # Инициализируем переменную для сбора данных
         quantity_sum = 0
-        # Проходим по каждой строке в DataFrame
         for index, row in new_data.iterrows():
-            # Проверяем, соответствует ли строка условиям
             if row['isin'] == isin and row['report_date'].strftime('%Y-%m-%d') == date:
                 quantity_sum += row['quantity']
-        # Если были найдены соответствующие строки, обновляем last_quantity
         if quantity_sum > 0:
             last_quantity += quantity_sum
-        # Записываем итоговое значение в таблицу
         table.loc[isin, date] = last_quantity
 
 
